@@ -1,0 +1,897 @@
+/* Apple Minimalist Design System & Variables */
+:root {
+  /* Light Theme (Default) */
+  --bg-main: #f5f5f7;
+  --bg-sidebar: rgba(245, 245, 247, 0.75);
+  --bg-card: rgba(255, 255, 255, 0.72);
+  --bg-item-hover: rgba(0, 0, 0, 0.04);
+  --bg-item-active: rgba(0, 113, 227, 0.08);
+  --bg-button: rgba(0, 0, 0, 0.04);
+  --bg-button-hover: rgba(0, 0, 0, 0.08);
+  
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-color-active: rgba(0, 113, 227, 0.3);
+  
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --text-muted: rgba(0, 0, 0, 0.3);
+  
+  --accent-color: #0071e3; /* Apple Blue */
+  --accent-color-hover: #0077ed;
+  --accent-glow: rgba(0, 113, 227, 0.15);
+  
+  --slider-track: rgba(0, 0, 0, 0.1);
+  --slider-track-hover: rgba(0, 0, 0, 0.18);
+  
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Inter, sans-serif;
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  --border-radius-xl: 20px;
+  --border-radius-lg: 14px;
+  --border-radius-md: 10px;
+  --border-radius-sm: 6px;
+  
+  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.03);
+  --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.05);
+  --shadow-player: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Theme */
+    --bg-main: #000000;
+    --bg-sidebar: rgba(22, 22, 23, 0.8);
+    --bg-card: rgba(28, 28, 30, 0.75);
+    --bg-item-hover: rgba(255, 255, 255, 0.06);
+    --bg-item-active: rgba(10, 132, 255, 0.15);
+    --bg-button: rgba(255, 255, 255, 0.08);
+    --bg-button-hover: rgba(255, 255, 255, 0.12);
+    
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-color-active: rgba(10, 132, 255, 0.4);
+    
+    --text-primary: #ffffff;
+    --text-secondary: #8e8e93;
+    --text-muted: rgba(255, 255, 255, 0.3);
+    
+    --accent-color: #0a84ff; /* iOS Dark Mode Blue */
+    --accent-color-hover: #409cff;
+    --accent-glow: rgba(10, 132, 255, 0.2);
+    
+    --slider-track: rgba(255, 255, 255, 0.2);
+    --slider-track-hover: rgba(255, 255, 255, 0.35);
+    
+    --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.5);
+    --shadow-player: 0 24px 60px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+/* Apple Dynamic Gradient Blobs */
+body::before {
+  content: '';
+  position: fixed;
+  top: -15%;
+  left: -15%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(0, 113, 227, 0.08) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+  animation: drift 25s infinite alternate ease-in-out;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -15%;
+  right: -15%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(255, 45, 85, 0.06) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+  animation: drift-reverse 30s infinite alternate ease-in-out;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(8%, 8%) scale(1.15); }
+}
+
+@keyframes drift-reverse {
+  0% { transform: translate(0, 0) scale(1.15); }
+  100% { transform: translate(-8%, -8%) scale(1); }
+}
+
+/* Unified macOS App Container */
+.app-container {
+  max-width: 1200px;
+  width: 92%;
+  height: 85vh;
+  min-height: 680px;
+  max-height: 850px;
+  margin: 40px auto;
+  background: var(--bg-card);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-player);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: height 0.3s ease, width 0.3s ease;
+}
+
+/* App Header (macOS Titlebar aesthetic) */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border-color);
+  user-select: none;
+}
+
+.header-left-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* macOS window controls decoration */
+.window-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.window-controls .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  opacity: 0.85;
+}
+
+.window-controls .dot.close { background-color: #ff5f56; }
+.window-controls .dot.minimize { background-color: #ffbd2e; }
+.window-controls .dot.maximize { background-color: #27c93f; }
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  font-size: 20px;
+  color: var(--accent-color);
+}
+
+.logo h1 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text-primary);
+}
+
+.header-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-button);
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: -0.1px;
+}
+
+/* Main Layout Grid */
+.app-main {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+/* Left Column: Sidebar */
+.sidebar-panel {
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-panel .panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+/* Sidebar Playlist Items */
+.playlist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  height: calc(100% - 30px);
+  padding-right: 4px;
+}
+
+.playlist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  width: 100%;
+  transition: var(--transition-smooth);
+  text-align: left;
+}
+
+.playlist-item:hover {
+  background: var(--bg-item-hover);
+}
+
+.playlist-item.active {
+  background: var(--bg-item-active);
+}
+
+.playlist-item.active .item-title {
+  color: var(--accent-color);
+}
+
+.item-cover {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--border-radius-sm);
+  object-fit: cover;
+  box-shadow: var(--shadow-subtle);
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.item-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+  transition: color 0.2s ease;
+}
+
+.item-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.item-meta span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right Side Content Grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Center Column: iOS-style Player Panel */
+.player-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 32px;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+}
+
+.episode-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.cover-art {
+  width: 220px;
+  height: 220px;
+  border-radius: var(--border-radius-xl);
+  object-fit: cover;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
+  margin-bottom: 24px;
+  transform: scale(0.95);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s ease;
+}
+
+/* Apple Music zoom-in cover art effect when playing */
+.player-panel:has(#play-pause-btn[aria-label="Pause"]) .cover-art {
+  transform: scale(1.03);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25), 0 0 30px var(--accent-glow);
+}
+
+.episode-info {
+  width: 100%;
+}
+
+.podcast-title {
+  font-size: 11px;
+  color: var(--accent-color);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.track-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+}
+
+.track-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding: 0 8px;
+}
+
+/* Player Audio Controller Container */
+.player-controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Custom Progress Seek Bar */
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  user-select: none;
+}
+
+.time-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 32px;
+  text-align: center;
+}
+
+/* Custom Styled Range Sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  flex-grow: 1;
+  height: 20px;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+/* Scrubber / Slider Track */
+input[type="range"]::-webkit-slider-runnable-track {
+  background: var(--slider-track);
+  height: 4px;
+  border-radius: 2px;
+  transition: height 0.2s ease, background-color 0.2s ease;
+}
+
+input[type="range"]:hover::-webkit-slider-runnable-track {
+  height: 6px;
+  background-color: var(--slider-track-hover);
+}
+
+/* Scrubber / Slider Thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--text-primary);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: -4px; /* Centers thumb vertically */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.25);
+  background-color: var(--accent-color);
+  margin-top: -5px; /* Recenter for thicker track */
+}
+
+/* Control buttons bar */
+.control-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.control-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.secondary-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-button);
+  border: none;
+}
+
+.secondary-btn:hover {
+  background: var(--bg-button-hover);
+  transform: scale(1.05);
+}
+
+.secondary-btn:active {
+  transform: scale(0.96);
+}
+
+/* Play/Pause Button styling */
+.play-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  color: var(--bg-main);
+  box-shadow: var(--shadow-medium);
+}
+
+.play-btn:hover {
+  transform: scale(1.06);
+  background: var(--accent-color);
+  color: #ffffff;
+}
+
+.play-btn:active {
+  transform: scale(0.95);
+}
+
+.play-btn span {
+  font-size: 28px;
+}
+
+.primary-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.primary-controls span {
+  font-size: 22px;
+}
+
+/* Volume Control */
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100px;
+}
+
+.volume-slider {
+  width: 60px;
+}
+
+/* Speed Selection Context Menu */
+.speed-control {
+  position: relative;
+}
+
+#speed-btn {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.speed-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(0px) scale(0.95);
+  background: var(--bg-card);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  min-width: 90px;
+  box-shadow: var(--shadow-medium);
+  z-index: 100;
+  
+  /* Hidden by default, animated transition */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.speed-menu.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(-8px) scale(1);
+}
+
+.speed-menu button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+  transition: var(--transition-smooth);
+}
+
+.speed-menu button:hover {
+  background: var(--bg-item-hover);
+  color: var(--text-primary);
+}
+
+.speed-menu button.active {
+  color: var(--accent-color);
+  background: var(--bg-item-active);
+  font-weight: 600;
+}
+
+/* Right Column: Lyrics/Subtitles Panel */
+.transcript-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.transcript-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  user-select: none;
+}
+
+.transcript-header .panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+/* Apple iOS pill switch style */
+.action-toggle {
+  background: var(--bg-button);
+  border: none;
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: var(--transition-smooth);
+}
+
+.action-toggle span {
+  font-size: 14px;
+}
+
+.action-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-button-hover);
+}
+
+.action-toggle.active {
+  background: var(--bg-item-active);
+  color: var(--accent-color);
+}
+
+/* Subtitle Lyrics Stream Body */
+.transcript-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-right: 6px;
+  scroll-behavior: smooth;
+}
+
+/* Apple Music Lyrics Typography Style */
+.transcript-line {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-primary);
+  opacity: 0.25; /* Blur out inactive lines */
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: var(--border-radius-lg);
+  transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              background-color 0.2s ease;
+  transform-origin: left center;
+  letter-spacing: -0.4px;
+}
+
+.transcript-line:hover {
+  opacity: 0.65;
+  background: var(--bg-item-hover);
+}
+
+/* Active Lyric Focus View */
+.transcript-line.active {
+  opacity: 1;
+  color: var(--text-primary);
+  transform: scale(1.025);
+  background: transparent;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+  .transcript-line.active {
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Scrollbar Styles */
+.transcript-body::-webkit-scrollbar,
+.playlist-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.transcript-body::-webkit-scrollbar-track,
+.playlist-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.transcript-body::-webkit-scrollbar-thumb,
+.playlist-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.transcript-body::-webkit-scrollbar-thumb:hover,
+.playlist-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Loading & Empty States Placeholders */
+.loading-placeholder, .no-transcript-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80%;
+  color: var(--text-secondary);
+  font-size: 13px;
+  gap: 12px;
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-placeholder span, .no-transcript-placeholder span {
+  font-size: 36px;
+  color: var(--text-secondary);
+  animation: spin 2s infinite linear;
+}
+
+.no-transcript-placeholder span {
+  animation: none;
+  color: var(--text-secondary);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Status Bar/Footer styling */
+.app-footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 12px 24px;
+  border-top: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.01);
+  user-select: none;
+}
+
+/* 
+ * ----------------------------------------------------
+ * Responsive Breakpoints (macOS app to mobile layouts)
+ * ----------------------------------------------------
+ */
+@media (max-width: 1024px) {
+  .app-container {
+    height: auto;
+    max-height: none;
+    min-height: auto;
+    margin: 20px auto;
+    width: 95%;
+  }
+
+  .app-main {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .sidebar-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 20px;
+  }
+
+  .playlist-container {
+    max-height: 180px;
+    height: auto;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+
+  .player-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 24px;
+    height: auto;
+    overflow: visible;
+  }
+
+  .cover-art {
+    width: 160px;
+    height: 160px;
+  }
+
+  .transcript-panel {
+    padding: 24px;
+    height: 480px; /* Constrain subtitles box height on tablet/mobile to allow correct auto-scroll */
+  }
+
+  .transcript-line {
+    font-size: 18px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    justify-content: flex-start;
+  }
+
+  .app-container {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+  }
+
+  .app-header {
+    padding: 12px 16px;
+  }
+
+  .window-controls {
+    display: none; /* Hide macOS window icons on small mobile screens */
+  }
+
+  .sidebar-panel {
+    padding: 16px;
+  }
+
+  .playlist-container {
+    max-height: 160px;
+  }
+
+  .player-panel {
+    padding: 20px 16px;
+  }
+
+  .cover-art {
+    width: 140px;
+    height: 140px;
+    margin-bottom: 16px;
+  }
+
+  .track-title {
+    font-size: 16px;
+  }
+
+  .transcript-panel {
+    padding: 20px 16px;
+    height: 400px;
+  }
+
+  .transcript-line {
+    font-size: 16px;
+    padding: 6px 10px;
+  }
+}
+
+/* Reduced motion optimizations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  body::before, body::after {
+    animation: none !important;
+  }
+}
