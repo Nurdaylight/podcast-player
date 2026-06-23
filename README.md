@@ -1,4 +1,4 @@
-# Antigravity Podcasts - Interactive Subtitle Player
+# naiza - Interactive Subtitle Player
 
 A fast, responsive, and aesthetically premium website that allows users to play podcast episodes and read synchronized interactive subtitles (parsed from WebVTT tracks).
 
