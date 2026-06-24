@@ -101,7 +101,7 @@ export default function App() {
   // Autoscroll
   useEffect(() => {
     if (autoscrollEnabled && activeCueId && transcriptRef.current) {
-      const activeEl = transcriptRef.current.querySelector('.active-cue');
+      const activeEl = transcriptRef.current.querySelector('.transcript-line.active');
       if (activeEl) {
         activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -382,14 +382,13 @@ export default function App() {
                   return (
                     <div 
                       key={i} 
-                      className={`subtitle-cue ${isActive ? 'active-cue' : ''}`}
+                      className={`transcript-line ${isActive ? 'active' : ''}`}
                       onClick={() => jumpToCue(cue.startTime)}
                       role="button"
                       tabIndex="0"
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') jumpToCue(cue.startTime); }}
                     >
-                      <span className="cue-time">{formatTime(cue.startTime)}</span>
-                      <p className="cue-text">{cue.text}</p>
+                      {cue.text}
                     </div>
                   );
                 })
