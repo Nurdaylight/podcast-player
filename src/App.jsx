@@ -198,10 +198,13 @@ export default function App() {
                   tabIndex="0"
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') playEpisode(idx); }}
                 >
-                  <img src={`${import.meta.env.BASE_URL}${ep.coverUrl}`} alt="" className="item-thumb" />
+                  <img src={`${import.meta.env.BASE_URL}${ep.coverUrl}`} alt="" className="item-cover" />
                   <div className="item-details">
-                    <h4>{ep.title}</h4>
-                    <span className="item-duration">{ep.duration}</span>
+                    <div className="item-title">{ep.title}</div>
+                    <div className="item-meta">
+                      <span>{ep.podcast || 'LibriVox'}</span>
+                      <span>{ep.duration}</span>
+                    </div>
                   </div>
                   {idx === currentEpisodeIndex && isPlaying && (
                     <span className="playing-indicator">
