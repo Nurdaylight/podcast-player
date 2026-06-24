@@ -1,60 +1,44 @@
-# naiza - Interactive Subtitle Player
+# naiza - Interactive Subtitles Podcast Player
 
-A fast, responsive, and aesthetically premium website that allows users to play podcast episodes and read synchronized interactive subtitles (parsed from WebVTT tracks).
-
----
+An aesthetically premium, high-performance web application designed for playing podcast episodes with interactive, synchronized subtitles. Built with modern web standards (HTML5 `<audio>`, `<track>`, WebVTT) and migrated to a robust React SPA using Vite, complete with PWA offline capabilities.
 
 ## Features
-- **Interactive Transcript**: Click any line of text in the transcript to jump the audio player straight to that moment.
-- **Real-time Sync**: Active sentences highlight in real-time as the audio plays.
-- **Auto-Scrolling**: Keeps the active subtitle line centered in the viewer automatically (can be toggled off).
-- **Custom Media UI**: Fully custom player controls (Play/Pause, volume, progress seek bar, and playback speed adjustment: `0.8x` to `2.0x`).
-- **Responsive Theme**: Premium, modern glassmorphic dark interface optimized for mobile, tablet, and desktop screens.
-- **Zero Dependencies**: Pure HTML, CSS, and vanilla ES modules—no build steps or compilation needed!
 
----
+- **Interactive Transcripts:** Powered by native HTML5 WebVTT (`textTracks`) parsing. Click on any subtitle cue to seek precisely to that moment in the audio.
+- **Progressive Web App (PWA):** Equipped with a Service Worker (via Workbox) that caches the UI shell, typography, and `data.json` for offline access and instant loading.
+- **Accessibility (A11y):** Screen reader optimized with `aria-live="polite"` on active subtitles, robust `role` attributes, keyboard navigation (Space/Enter) on all interactive elements.
+- **Custom Player Controls:** Adjust playback speed, seek timeline, and volume seamlessly.
+- **Glassmorphic UI:** A dark, visually engaging, responsive interface that feels alive with micro-animations.
 
-## Fast & Free Deployment via Git & GitHub Pages
+## Getting Started
 
-Since this website is completely static, you can host it for free on **GitHub Pages** with custom domains and SSL out-of-the-box. Follow these simple steps:
+### Prerequisites
 
-### Step 1: Initialize Git Local Repository
-Open your terminal inside this directory and run:
+You need Node.js and npm installed.
+
+### Development
+
+1. Clone the repository.
+2. Run `npm install` to install dependencies.
+3. Run `npm run dev` to start the Vite development server.
+
+### Building for Production
+
+To create an optimized, minified bundle with generated Service Workers:
+
 ```bash
-git init
-git add .
-git commit -m "Initial commit of podcast app"
+npm run build
 ```
 
-### Step 2: Create a Repository on GitHub
-1. Go to [GitHub](https://github.com) and sign in.
-2. Create a new repository (name it something like `podcast-website`). Keep it **Public** so that GitHub Pages can host it for free.
-3. Copy the remote URL. It will look like:
-   `https://github.com/YOUR-USERNAME/podcast-website.git`
+This will output the static files to the `dist` directory.
 
-### Step 3: Link and Push to GitHub
-Run the following commands in your terminal:
-```bash
-git remote add origin https://github.com/YOUR-USERNAME/podcast-website.git
-git branch -M main
-git push -u origin main
-```
+## GitHub Pages Deployment
 
-### Step 4: Enable GitHub Pages
-1. Go to your new repository on GitHub.
-2. Click on **Settings** (with the gear icon).
-3. Scroll down the left sidebar and click **Pages** (under the "Code and automation" section).
-4. Under **Build and deployment -> Source**, select **Deploy from a branch**.
-5. Under **Branch**, select `main` and `/ (root)`, then click **Save**.
-6. Wait 1-2 minutes. GitHub will compile the page and present a live URL:
-   `https://YOUR-USERNAME.github.io/podcast-website/`
+To host this Vite + React PWA for free on GitHub Pages:
 
----
+**Using GitHub Actions (Recommended)**
+1. Create a `.github/workflows/deploy.yml` in your repository.
+2. Configure it to build the project (`npm run build`) and deploy the `dist` folder to GitHub Pages.
+3. Go to your repository settings -> Pages, and set the source to "GitHub Actions".
 
-## Local Development
-To run this website locally without CORS issues (since fetching `data.json` and `.vtt` tracks requires a local server):
-1. Install any static server, or if you have Python installed, run:
-   ```bash
-   python -m http.server 8000
-   ```
-2. Open `http://localhost:8000` in your web browser.
+Alternatively, you can manually build and push the `dist` folder to a `gh-pages` branch.
