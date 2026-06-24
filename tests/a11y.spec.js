@@ -10,9 +10,9 @@ test.describe('Accessibility Audit', () => {
         "title": "Mock Episode",
         "podcast": "Mock Podcast",
         "description": "Mock description",
-        "coverUrl": "/cover.png",
-        "audioUrl": "/mock.mp3",
-        "vttUrl": "/mock.vtt",
+        "coverUrl": "cover.png",
+        "audioUrl": "mock.mp3",
+        "vttUrl": "mock.vtt",
         "duration": "01:00"
       }];
       await route.fulfill({ json });

@@ -29,7 +29,7 @@ export default function App() {
   const transcriptRef = useRef(null);
 
   useEffect(() => {
-    fetch('/data.json')
+    fetch(`${import.meta.env.BASE_URL}data.json`)
       .then(res => res.json())
       .then(data => setEpisodes(data))
       .catch(err => console.error("Failed to load episodes:", err));
@@ -198,7 +198,7 @@ export default function App() {
                   tabIndex="0"
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') playEpisode(idx); }}
                 >
-                  <img src={`/${ep.coverUrl}`} alt="" className="item-thumb" />
+                  <img src={`${import.meta.env.BASE_URL}${ep.coverUrl}`} alt="" className="item-thumb" />
                   <div className="item-details">
                     <h4>{ep.title}</h4>
                     <span className="item-duration">{ep.duration}</span>
@@ -224,7 +224,7 @@ export default function App() {
             {currentEpisode ? (
               <>
                 <div className="episode-details">
-                  <img src={`/${currentEpisode.coverUrl}`} alt="Episode Cover Art" className="cover-art" />
+                  <img src={`${import.meta.env.BASE_URL}${currentEpisode.coverUrl}`} alt="Episode Cover Art" className="cover-art" />
                   <div className="episode-info">
                     <span className="podcast-title">{currentEpisode.podcast}</span>
                     <h2 className="track-title">{currentEpisode.title}</h2>
@@ -241,7 +241,7 @@ export default function App() {
                     <track 
                       ref={trackRef}
                       kind="subtitles" 
-                      src={`/${currentEpisode.vttUrl}`} 
+                      src={`${import.meta.env.BASE_URL}${currentEpisode.vttUrl}`} 
                       default 
                     />
                   </audio>
