@@ -42,18 +42,15 @@ export default function App() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleDurationChange = () => setDuration(audio.duration);
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('durationchange', handleDurationChange);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
 
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('durationchange', handleDurationChange);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
@@ -83,13 +80,7 @@ export default function App() {
           });
         }
 
-        track.oncuechange = () => {
-          if (track.activeCues && track.activeCues.length > 0) {
-            setActiveCueId(track.activeCues[0].id || track.activeCues[0].startTime);
-          } else {
-            setActiveCueId(null);
-          }
-        };
+
       }
     };
 
@@ -109,6 +100,21 @@ export default function App() {
   }, [activeCueId, autoscrollEnabled]);
 
   // Controls
+  const handleTimeUpdate = (e) => {
+    const time = e.target.currentTime;
+    setCurrentTime(time);
+    
+    // Sync active subtitle
+    if (cuesList.length > 0) {
+      const activeCue = cuesList.find(c => time >= c.startTime && time <= c.endTime);
+      if (activeCue) {
+        setActiveCueId(activeCue.id || activeCue.startTime);
+      } else {
+        setActiveCueId(null);
+      }
+    }
+  };
+
   const togglePlay = () => {
     if (!audioRef.current) return;
     if (isPlaying) audioRef.current.pause();
@@ -240,6 +246,7 @@ export default function App() {
                     ref={audioRef} 
                     src={currentEpisode.audioUrl} 
                     preload="metadata"
+                    onTimeUpdate={handleTimeUpdate}
                   >
                     <track 
                       ref={trackRef}
