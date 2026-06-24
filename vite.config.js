@@ -33,4 +33,4 @@ export default defineConfig(({ command }) => ({
     setupFiles: './src/test/setup.js',
     globals: true
   }
-})
+}))
