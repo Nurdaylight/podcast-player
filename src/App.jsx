@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './index.css';
 
-function formatTime(seconds) {
-  if (isNaN(seconds) || seconds < 0) return '0:00';
+export function formatTime(seconds) {
+  if (isNaN(seconds) || seconds < 0 || !isFinite(seconds)) return '0:00';
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -73,8 +73,14 @@ export default function App() {
         const track = tracks[0];
         track.mode = 'hidden'; // Must be hidden so the browser parses it, but doesn't render native captions
         
-        if (track.cues && track.cues.length > 0 && cuesList.length === 0) {
-          setCuesList(Array.from(track.cues));
+        if (track.cues && track.cues.length > 0) {
+          setCuesList(prev => {
+            if (prev.length === 0) {
+              clearInterval(interval);
+              return Array.from(track.cues);
+            }
+            return prev;
+          });
         }
 
         track.oncuechange = () => {
@@ -138,14 +144,18 @@ export default function App() {
     setCurrentEpisodeIndex(index);
     setCuesList([]); // reset cues
     setActiveCueId(null);
-    setIsPlaying(false);
-    // Give react time to render the new track src, then play
-    setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.play().catch(e => console.log(e));
-      }
-    }, 100);
+    setIsPlaying(true); // Optimistically set playing
   };
+
+  // Autoplay when episode changes
+  useEffect(() => {
+    if (isPlaying && audioRef.current && currentEpisode) {
+      audioRef.current.play().catch(e => {
+        console.log("Autoplay prevented:", e);
+        setIsPlaying(false);
+      });
+    }
+  }, [currentEpisodeIndex]);
 
   const jumpToCue = (startTime) => {
     if (audioRef.current) {
