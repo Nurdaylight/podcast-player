@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './index.css';
 
+const BASE = import.meta.env.BASE_URL;
+
 export function formatTime(seconds) {
   if (isNaN(seconds) || seconds < 0 || !isFinite(seconds)) return '0:00';
   const mins = Math.floor(seconds / 60);
@@ -9,165 +11,139 @@ export function formatTime(seconds) {
 }
 
 export default function App() {
+  // Episode state
   const [episodes, setEpisodes] = useState([]);
-  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(0);
-  
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [episodeIdx, setEpisodeIdx] = useState(0);
+
+  // Player state
+  const [playing, setPlaying] = useState(false);
+  const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
-  const [isMuted, setIsMuted] = useState(false);
-  const [playbackRate, setPlaybackRate] = useState(1.0);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-  
-  const [activeCueId, setActiveCueId] = useState(null);
-  const [cuesList, setCuesList] = useState([]);
-  const [autoscrollEnabled, setAutoscrollEnabled] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
+  const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
 
+  // Subtitle state
+  const [cues, setCues] = useState([]);
+  const [activeCueIdx, setActiveCueIdx] = useState(-1);
+  const [autoscroll, setAutoscroll] = useState(true);
+
+  // Refs
   const audioRef = useRef(null);
-  const trackRef = useRef(null);
   const transcriptRef = useRef(null);
 
+  // Load episodes
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data.json`)
-      .then(res => res.json())
-      .then(data => setEpisodes(data))
-      .catch(err => console.error("Failed to load episodes:", err));
+    fetch(`${BASE}data.json`)
+      .then(r => r.json())
+      .then(setEpisodes)
+      .catch(e => console.error('Failed to load episodes:', e));
   }, []);
 
-  const currentEpisode = episodes[currentEpisodeIndex] || null;
+  const episode = episodes[episodeIdx] || null;
 
-  // Audio Event Listeners
+  // Parse VTT manually — way more reliable than the TextTrack API
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    if (!episode) return;
+    setCues([]);
+    setActiveCueIdx(-1);
 
-    const handleDurationChange = () => setDuration(audio.duration);
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-
-    audio.addEventListener('durationchange', handleDurationChange);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
-
-    return () => {
-      audio.removeEventListener('durationchange', handleDurationChange);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
-    };
-  }, [currentEpisode]);
-
-  // Track (WebVTT) Event Listeners
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    // We must poll slightly or wait for the track to load its cues
-    let interval;
-    const checkTrack = () => {
-      const tracks = audio.textTracks;
-      if (tracks && tracks.length > 0) {
-        const track = tracks[0];
-        track.mode = 'hidden'; // Must be hidden so the browser parses it, but doesn't render native captions
-        
-        if (track.cues && track.cues.length > 0) {
-          setCuesList(prev => {
-            if (prev.length === 0) {
-              clearInterval(interval);
-              return Array.from(track.cues);
-            }
-            return prev;
+    fetch(`${BASE}${episode.vttUrl}`)
+      .then(r => r.text())
+      .then(text => {
+        const parsed = [];
+        const blocks = text.split(/\n\n+/);
+        for (const block of blocks) {
+          const lines = block.trim().split('\n');
+          const timeLine = lines.find(l => l.includes('-->'));
+          if (!timeLine) continue;
+          const [startStr, endStr] = timeLine.split('-->').map(s => s.trim());
+          const textContent = lines.slice(lines.indexOf(timeLine) + 1).join(' ').trim();
+          if (!textContent) continue;
+          parsed.push({
+            start: parseTimestamp(startStr),
+            end: parseTimestamp(endStr),
+            text: textContent,
           });
         }
+        setCues(parsed);
+      })
+      .catch(e => console.error('Failed to load VTT:', e));
+  }, [episode]);
 
-
-      }
-    };
-
-    interval = setInterval(checkTrack, 500);
-
-    return () => clearInterval(interval);
-  }, [currentEpisode, cuesList.length]);
-
-  // Autoscroll
-  useEffect(() => {
-    if (autoscrollEnabled && activeCueId && transcriptRef.current) {
-      const activeEl = transcriptRef.current.querySelector('.transcript-line.active');
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+  function parseTimestamp(str) {
+    // Handles "MM:SS.mmm" or "HH:MM:SS.mmm"
+    const parts = str.split(':');
+    if (parts.length === 2) {
+      return parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
     }
-  }, [activeCueId, autoscrollEnabled]);
+    return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
+  }
 
-  // Controls
-  const handleTimeUpdate = (e) => {
-    const time = e.target.currentTime;
-    setCurrentTime(time);
-    
-    // Sync active subtitle
-    if (cuesList.length > 0) {
-      const activeCue = cuesList.find(c => time >= c.startTime && time <= c.endTime);
-      if (activeCue) {
-        setActiveCueId(activeCue.id || activeCue.startTime);
-      } else {
-        setActiveCueId(null);
-      }
-    }
+  // Sync active cue on time update
+  const onTimeUpdate = () => {
+    const t = audioRef.current.currentTime;
+    setTime(t);
+    const idx = cues.findIndex(c => t >= c.start && t < c.end);
+    setActiveCueIdx(idx);
   };
 
+  // Autoscroll to active cue
+  useEffect(() => {
+    if (!autoscroll || activeCueIdx < 0 || !transcriptRef.current) return;
+    const el = transcriptRef.current.children[activeCueIdx];
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [activeCueIdx, autoscroll]);
+
+  // Player controls
   const togglePlay = () => {
     if (!audioRef.current) return;
-    if (isPlaying) audioRef.current.pause();
-    else audioRef.current.play();
+    playing ? audioRef.current.pause() : audioRef.current.play();
   };
 
-  const handleSeek = (e) => {
-    const time = parseFloat(e.target.value);
-    audioRef.current.currentTime = time;
-    setCurrentTime(time);
+  const seek = (e) => {
+    const t = parseFloat(e.target.value);
+    audioRef.current.currentTime = t;
+    setTime(t);
   };
 
-  const handleVolume = (e) => {
-    const vol = parseFloat(e.target.value);
-    setVolume(vol);
-    audioRef.current.volume = vol;
-    if (vol > 0) setIsMuted(false);
+  const changeVolume = (e) => {
+    const v = parseFloat(e.target.value);
+    setVolume(v);
+    audioRef.current.volume = v;
+    if (v > 0) setMuted(false);
   };
 
   const toggleMute = () => {
-    const newMuted = !isMuted;
-    setIsMuted(newMuted);
-    audioRef.current.muted = newMuted;
+    setMuted(!muted);
+    audioRef.current.muted = !muted;
   };
 
-  const changeSpeed = (speed) => {
-    setPlaybackRate(speed);
-    audioRef.current.playbackRate = speed;
-    setShowSpeedMenu(false);
+  const changeSpeed = (s) => {
+    setSpeed(s);
+    audioRef.current.playbackRate = s;
+    setSpeedMenuOpen(false);
   };
 
-  const playEpisode = (index) => {
-    setCurrentEpisodeIndex(index);
-    setCuesList([]); // reset cues
-    setActiveCueId(null);
-    setIsPlaying(true); // Optimistically set playing
+  const selectEpisode = (idx) => {
+    setEpisodeIdx(idx);
+    setCues([]);
+    setActiveCueIdx(-1);
+    setPlaying(true);
   };
 
-  // Autoplay when episode changes
+  // Autoplay on episode change
   useEffect(() => {
-    if (isPlaying && audioRef.current && currentEpisode) {
-      audioRef.current.play().catch(e => {
-        console.log("Autoplay prevented:", e);
-        setIsPlaying(false);
-      });
+    if (playing && audioRef.current && episode) {
+      audioRef.current.play().catch(() => setPlaying(false));
     }
-  }, [currentEpisodeIndex]);
+  }, [episodeIdx]);
 
-  const jumpToCue = (startTime) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = startTime;
-      if (!isPlaying) audioRef.current.play();
-    }
+  const jumpTo = (startTime) => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = startTime;
+    if (!playing) audioRef.current.play();
   };
 
   return (
@@ -175,9 +151,9 @@ export default function App() {
       <header className="app-header">
         <div className="header-left-group">
           <div className="window-controls">
-            <span className="dot close"></span>
-            <span className="dot minimize"></span>
-            <span className="dot maximize"></span>
+            <span className="dot close" />
+            <span className="dot minimize" />
+            <span className="dot maximize" />
           </div>
           <div className="logo">
             <span className="material-symbols-rounded logo-icon">graphic_eq</span>
@@ -196,27 +172,25 @@ export default function App() {
               <div className="loading-placeholder">Loading playlist...</div>
             ) : (
               episodes.map((ep, idx) => (
-                <div 
+                <div
                   key={ep.id}
-                  className={`playlist-item ${idx === currentEpisodeIndex ? 'active' : ''}`}
-                  onClick={() => playEpisode(idx)}
+                  className={`playlist-item ${idx === episodeIdx ? 'active' : ''}`}
+                  onClick={() => selectEpisode(idx)}
                   role="button"
                   tabIndex="0"
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') playEpisode(idx); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') selectEpisode(idx); }}
                 >
-                  <img src={`${import.meta.env.BASE_URL}${ep.coverUrl}`} alt="" className="item-cover" />
+                  <img src={`${BASE}${ep.coverUrl}`} alt="" className="item-cover" />
                   <div className="item-details">
                     <div className="item-title">{ep.title}</div>
                     <div className="item-meta">
-                      <span>{ep.podcast || 'LibriVox'}</span>
+                      <span>{ep.podcast}</span>
                       <span>{ep.duration}</span>
                     </div>
                   </div>
-                  {idx === currentEpisodeIndex && isPlaying && (
+                  {idx === episodeIdx && playing && (
                     <span className="playing-indicator">
-                      <span className="bar"></span>
-                      <span className="bar"></span>
-                      <span className="bar"></span>
+                      <span className="bar" /><span className="bar" /><span className="bar" />
                     </span>
                   )}
                 </div>
@@ -227,44 +201,39 @@ export default function App() {
 
         {/* Main Grid */}
         <div className="content-grid">
-          
           {/* Player Panel */}
           <section className="player-panel" aria-label="Podcast Player">
-            {currentEpisode ? (
+            {episode ? (
               <>
                 <div className="episode-details">
-                  <img src={`${import.meta.env.BASE_URL}${currentEpisode.coverUrl}`} alt="Episode Cover Art" className="cover-art" />
+                  <img src={`${BASE}${episode.coverUrl}`} alt="Episode Cover Art" className="cover-art" />
                   <div className="episode-info">
-                    <span className="podcast-title">{currentEpisode.podcast}</span>
-                    <h2 className="track-title">{currentEpisode.title}</h2>
-                    <p className="track-desc">{currentEpisode.description}</p>
+                    <span className="podcast-title">{episode.podcast}</span>
+                    <h2 className="track-title">{episode.title}</h2>
+                    <p className="track-desc">{episode.description}</p>
                   </div>
                 </div>
 
                 <div className="player-controls-container">
-                  <audio 
-                    ref={audioRef} 
-                    src={currentEpisode.audioUrl} 
+                  <audio
+                    ref={audioRef}
+                    src={episode.audioUrl}
                     preload="metadata"
-                    onTimeUpdate={handleTimeUpdate}
-                  >
-                    <track 
-                      ref={trackRef}
-                      kind="subtitles" 
-                      src={`${import.meta.env.BASE_URL}${currentEpisode.vttUrl}`} 
-                      default 
-                    />
-                  </audio>
-                  
+                    onTimeUpdate={onTimeUpdate}
+                    onDurationChange={() => setDuration(audioRef.current.duration)}
+                    onPlay={() => setPlaying(true)}
+                    onPause={() => setPlaying(false)}
+                  />
+
                   <div className="progress-container">
-                    <span className="time-label">{formatTime(currentTime)}</span>
-                    <input 
-                      type="range" 
-                      className="seek-slider" 
-                      min="0" 
-                      max={duration || 100} 
-                      value={currentTime} 
-                      onChange={handleSeek}
+                    <span className="time-label">{formatTime(time)}</span>
+                    <input
+                      type="range"
+                      className="seek-slider"
+                      min="0"
+                      max={duration || 100}
+                      value={time}
+                      onChange={seek}
                       aria-label="Seek track"
                     />
                     <span className="time-label">{formatTime(duration)}</span>
@@ -272,22 +241,22 @@ export default function App() {
 
                   <div className="control-bar">
                     <div className="speed-control">
-                      <button 
-                        className="control-btn secondary-btn" 
-                        onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                      <button
+                        className="control-btn secondary-btn"
+                        onClick={() => setSpeedMenuOpen(!speedMenuOpen)}
                         aria-label="Playback speed"
                       >
-                        {playbackRate}x
+                        {speed}x
                       </button>
-                      {showSpeedMenu && (
+                      {speedMenuOpen && (
                         <div className="speed-menu" style={{ display: 'flex' }}>
-                          {[0.8, 1.0, 1.2, 1.5, 2.0].map(speed => (
-                            <button 
-                              key={speed}
-                              className={playbackRate === speed ? 'active' : ''}
-                              onClick={() => changeSpeed(speed)}
+                          {[0.8, 1.0, 1.2, 1.5, 2.0].map(s => (
+                            <button
+                              key={s}
+                              className={speed === s ? 'active' : ''}
+                              onClick={() => changeSpeed(s)}
                             >
-                              {speed}x
+                              {s}x
                             </button>
                           ))}
                         </div>
@@ -295,25 +264,26 @@ export default function App() {
                     </div>
 
                     <div className="primary-controls">
-                      <button 
-                        className="control-btn secondary-btn" 
-                        onClick={() => playEpisode(Math.max(0, currentEpisodeIndex - 1))}
+                      <button
+                        className="control-btn secondary-btn"
+                        onClick={() => selectEpisode(Math.max(0, episodeIdx - 1))}
                         aria-label="Previous episode"
                       >
                         <span className="material-symbols-rounded">skip_previous</span>
                       </button>
-                      <button 
-                        className="control-btn play-btn" 
+                      <button
+                        className="control-btn play-btn"
                         onClick={togglePlay}
-                        aria-label="Play/Pause"
+                        aria-label={playing ? 'Pause' : 'Play'}
+                        id="play-pause-btn"
                       >
                         <span className="material-symbols-rounded">
-                          {isPlaying ? 'pause' : 'play_arrow'}
+                          {playing ? 'pause' : 'play_arrow'}
                         </span>
                       </button>
-                      <button 
-                        className="control-btn secondary-btn" 
-                        onClick={() => playEpisode(Math.min(episodes.length - 1, currentEpisodeIndex + 1))}
+                      <button
+                        className="control-btn secondary-btn"
+                        onClick={() => selectEpisode(Math.min(episodes.length - 1, episodeIdx + 1))}
                         aria-label="Next episode"
                       >
                         <span className="material-symbols-rounded">skip_next</span>
@@ -321,23 +291,21 @@ export default function App() {
                     </div>
 
                     <div className="volume-control">
-                      <button 
-                        className="control-btn secondary-btn" 
+                      <button
+                        className="control-btn secondary-btn"
                         onClick={toggleMute}
                         aria-label="Mute/Unmute"
                       >
                         <span className="material-symbols-rounded">
-                          {isMuted || volume === 0 ? 'volume_off' : 'volume_up'}
+                          {muted || volume === 0 ? 'volume_off' : 'volume_up'}
                         </span>
                       </button>
-                      <input 
-                        type="range" 
-                        className="volume-slider" 
-                        min="0" 
-                        max="1" 
-                        step="0.05" 
-                        value={isMuted ? 0 : volume} 
-                        onChange={handleVolume}
+                      <input
+                        type="range"
+                        className="volume-slider"
+                        min="0" max="1" step="0.05"
+                        value={muted ? 0 : volume}
+                        onChange={changeVolume}
                         aria-label="Volume"
                       />
                     </div>
@@ -358,53 +326,43 @@ export default function App() {
           <section className="transcript-panel" aria-label="Interactive Transcript">
             <div className="transcript-header">
               <h2 className="panel-title">Interactive Subtitles</h2>
-              <div className="transcript-actions">
-                <button 
-                  className={`action-toggle ${autoscrollEnabled ? 'active' : ''}`} 
-                  onClick={() => setAutoscrollEnabled(!autoscrollEnabled)}
-                  aria-label="Toggle Auto-Scroll"
-                >
-                  <span className="material-symbols-rounded">arrow_downward</span> Auto-Scroll
-                </button>
-              </div>
+              <button
+                className={`action-toggle ${autoscroll ? 'active' : ''}`}
+                onClick={() => setAutoscroll(!autoscroll)}
+                aria-label="Toggle Auto-Scroll"
+              >
+                <span className="material-symbols-rounded">arrow_downward</span> Auto-Scroll
+              </button>
             </div>
-            <div 
-              className="transcript-body" 
-              ref={transcriptRef}
-              aria-live="polite" // Screen readers will announce changes
-            >
-              {!currentEpisode ? (
+            <div className="transcript-body" ref={transcriptRef} aria-live="polite">
+              {!episode ? (
                 <div className="no-transcript-placeholder">
                   <span className="material-symbols-rounded">subtitles</span>
                   <p>Select an episode to view subtitles.</p>
                 </div>
-              ) : cuesList.length === 0 ? (
+              ) : cues.length === 0 ? (
                 <div className="no-transcript-placeholder">
                   <p>Loading subtitles...</p>
                 </div>
               ) : (
-                cuesList.map((cue, i) => {
-                  const cueId = cue.id || cue.startTime;
-                  const isActive = activeCueId === cueId;
-                  return (
-                    <div 
-                      key={i} 
-                      className={`transcript-line ${isActive ? 'active' : ''}`}
-                      onClick={() => jumpToCue(cue.startTime)}
-                      role="button"
-                      tabIndex="0"
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') jumpToCue(cue.startTime); }}
-                    >
-                      {cue.text}
-                    </div>
-                  );
-                })
+                cues.map((cue, i) => (
+                  <div
+                    key={i}
+                    className={`transcript-line ${i === activeCueIdx ? 'active' : ''}`}
+                    onClick={() => jumpTo(cue.start)}
+                    role="button"
+                    tabIndex="0"
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') jumpTo(cue.start); }}
+                  >
+                    {cue.text}
+                  </div>
+                ))
               )}
             </div>
           </section>
         </div>
       </main>
-      
+
       <footer className="app-footer">
         <p>&copy; 2026 naiza. Powered by React, Vite, and native WebVTT. Hosted for free.</p>
       </footer>
