@@ -1,0 +1,22 @@
+[
+  {
+    "id": "episode-1",
+    "title": "Abraham Lincoln: The Gettysburg Address",
+    "podcast": "LibriVox Historical Speeches",
+    "description": "The historic address delivered by President Abraham Lincoln at the dedication of the Soldiers' National Cemetery in Gettysburg, Pennsylvania on November 19, 1863. Read by Jim Cadwell.",
+    "audioUrl": "https://archive.org/download/gettysburg_address4_librivox/lincoln_gettysburg_address.mp3",
+    "vttUrl": "subtitles_ep1.vtt",
+    "duration": "02:29",
+    "coverUrl": "gettysburg_cover.png"
+  },
+  {
+    "id": "episode-2",
+    "title": "Abraham Lincoln: Second Inaugural Address",
+    "podcast": "LibriVox Historical Speeches",
+    "description": "Delivered on March 4, 1865, near the end of the Civil War, Abraham Lincoln's Second Inaugural Address is one of the most powerful and poetic presidential speeches in American history. Read by John Greenman.",
+    "audioUrl": "https://archive.org/download/lincolnsinauguraladdresses_1501_librivox/lincolnsinauguraladdresses_02_lincoln.mp3",
+    "vttUrl": "subtitles_ep2.vtt",
+    "duration": "06:15",
+    "coverUrl": "inaugural_cover.png"
+  }
+]
