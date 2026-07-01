@@ -1,0 +1,20 @@
+FRENCH WORDS WOVEN INTO THE RUSSIAN AUDIO — A2
+==================================================
+French (target)   <-  Russian (original)
+
+  temps            <-  время   (appears x31)
+  dire             <-  сказать   (appears x23)
+  personne         <-  человек   (appears x20)
+  gens             <-  люди   (appears x16)
+  question         <-  вопрос   (appears x16)
+  a dit            <-  сказал   (appears x15)
+  université       <-  университет   (appears x11)
+  école            <-  школа   (appears x11)
+  vie              <-  жизнь   (appears x10)
+  science          <-  науки   (appears x10)
+  premier          <-  первый   (appears x10)
+  année            <-  год   (appears x10)
+  travail          <-  работа   (appears x9)
+  travailler       <-  работать   (appears x9)
+  science          <-  наука   (appears x8)
+  physique         <-  физика   (appears x8)
