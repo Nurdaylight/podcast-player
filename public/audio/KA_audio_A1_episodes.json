@@ -1,0 +1,82 @@
+[
+  {
+    "episode": 1,
+    "file": "KA_audio_A1_ep01.mp3",
+    "start_s": 0.0,
+    "end_s": 797.7,
+    "minutes": 13.3,
+    "size_mb": 19.1
+  },
+  {
+    "episode": 2,
+    "file": "KA_audio_A1_ep02.mp3",
+    "start_s": 797.7,
+    "end_s": 1594.2,
+    "minutes": 13.3,
+    "size_mb": 19.1
+  },
+  {
+    "episode": 3,
+    "file": "KA_audio_A1_ep03.mp3",
+    "start_s": 1594.2,
+    "end_s": 2391.9,
+    "minutes": 13.3,
+    "size_mb": 19.1
+  },
+  {
+    "episode": 4,
+    "file": "KA_audio_A1_ep04.mp3",
+    "start_s": 2391.9,
+    "end_s": 3188.6,
+    "minutes": 13.3,
+    "size_mb": 19.1
+  },
+  {
+    "episode": 5,
+    "file": "KA_audio_A1_ep05.mp3",
+    "start_s": 3188.6,
+    "end_s": 3986.8,
+    "minutes": 13.3,
+    "size_mb": 19.2
+  },
+  {
+    "episode": 6,
+    "file": "KA_audio_A1_ep06.mp3",
+    "start_s": 3986.8,
+    "end_s": 4782.8,
+    "minutes": 13.3,
+    "size_mb": 19.1
+  },
+  {
+    "episode": 7,
+    "file": "KA_audio_A1_ep07.mp3",
+    "start_s": 4782.8,
+    "end_s": 5582.0,
+    "minutes": 13.3,
+    "size_mb": 19.2
+  },
+  {
+    "episode": 8,
+    "file": "KA_audio_A1_ep08.mp3",
+    "start_s": 5582.0,
+    "end_s": 6377.0,
+    "minutes": 13.2,
+    "size_mb": 19.1
+  },
+  {
+    "episode": 9,
+    "file": "KA_audio_A1_ep09.mp3",
+    "start_s": 6377.0,
+    "end_s": 7176.1,
+    "minutes": 13.3,
+    "size_mb": 19.2
+  },
+  {
+    "episode": 10,
+    "file": "KA_audio_A1_ep10.mp3",
+    "start_s": 7176.1,
+    "end_s": 7972.7,
+    "minutes": 13.3,
+    "size_mb": 19.1
+  }
+]

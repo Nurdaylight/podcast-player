@@ -217,7 +217,7 @@ export default function App() {
                 <div className="player-controls-container">
                   <audio
                     ref={audioRef}
-                    src={episode.audioUrl}
+                    src={/^https?:\/\//.test(episode.audioUrl) ? episode.audioUrl : `${BASE}${episode.audioUrl}`}
                     preload="metadata"
                     onTimeUpdate={onTimeUpdate}
                     onDurationChange={() => setDuration(audioRef.current.duration)}
